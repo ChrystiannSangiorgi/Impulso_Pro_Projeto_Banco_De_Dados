@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Dicionário de Dados - Impulso Pro</title>
+    
+    <!-- Carrega o Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Importa a fonte 'Inter' (padrão do Tailwind) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Ícones (para o menu hamburger e 'voltar ao topo') -->
+    <!-- CORREÇÃO: Trocado 'lucide-react' por 'lucide' na URL. A versão 'react' não expõe o objeto global 'lucide'. -->
+    <script src="https://unpkg.com/lucide@0.363.0/dist/umd/lucide.min.js"></script>
+
+    <style>
+        /* Estilo base para a fonte e suavização */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Scroll suave ao clicar nos links da sidebar */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Customização da barra de rolagem (opcional, para um visual mais limpo) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; /* slate-100 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* slate-400 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* slate-500 */
+        }
+        
+        /* Estilo para a transição da sidebar */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <!-- 
+      Sidebar (Navegação Lateral)
+      - 'fixed' e 'h-full' fazem ela ocupar a altura toda.
+      - 'w-64' define a largura.
+      - 'transform -translate-x-full md:translate-x-0' é o segredo da responsividade:
+        - Por padrão, ela fica "fora da tela" à esquerda (-translate-x-full).
+        - Em telas médias (md) ou maiores, ela volta à posição normal (translate-x-0).
+      - JavaScript vai controlar a classe 'translate-x-0' para abrir/fechar no mobile.
+    -->
+    <aside id="sidebar" class="fixed top-0 left-0 z-40 h-full w-64 bg-slate-900 text-white flex flex-col transform -translate-x-full md:translate-x-0">
+        <!-- Cabeçalho da Sidebar -->
+        <div class="p-4 border-b border-slate-700">
+            <h1 class="text-xl font-bold">Dicionário de Dados</h1>
+            <span class="text-sm text-slate-400">Impulso Pro</span>
+        </div>
+
+        <!-- Campo de Filtro/Busca -->
+        <div class="p-4 border-b border-slate-700">
+            <input type="text" id="filter-input" class="w-full px-3 py-2 bg-slate-800 text-white border border-slate-700 rounded-md text-sm focus:outline-none focus:border-blue-500" placeholder="Filtrar tabelas...">
+        </div>
+
+        <!-- Lista de Navegação (Será preenchida pelo JS) -->
+        <nav id="sidebar-nav" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <!-- O conteúdo aqui será gerado dinamicamente pelo JavaScript -->
+        </nav>
+    </aside>
+
+    <!-- Overlay (fundo escuro para o menu mobile) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- 
+      Conteúdo Principal
+      - 'md:ml-64' adiciona uma margem à esquerda em telas médias (md) ou maiores,
+        exatamente da largura da sidebar, para que o conteúdo não fique embaixo dela.
+    -->
+    <div class="md:ml-64 transition-all duration-300">
+        
+        <!-- Cabeçalho Mobile (só aparece em telas pequenas) -->
+        <header class="md:hidden sticky top-0 bg-white shadow-md z-20 flex items-center justify-between p-4">
+            <button id="menu-toggle" class="text-slate-700 hover:text-blue-600" onclick="toggleSidebar()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            </button>
+            <h1 class="text-lg font-semibold text-slate-800">Dicionário de Dados</h1>
+            <div class="w-6"></div> <!-- Espaçador -->
+        </header>
+
+        <!-- Container do Conteúdo -->
+        <main class="p-4 md:p-8 max-w-7xl mx-auto">
+            
+            <!-- Seção de Análise (REMOVIDA) -->
+
+            <!-- Seção do Dicionário Detalhado (Será preenchida pelo JS) -->
+            <section id="dicionario">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Dicionário de Dados Detalhado</h2>
+                <div id="tables-container" class="space-y-8">
+                    <!-- O conteúdo (cards de tabela) será gerado dinamicamente pelo JavaScript -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Botão Flutuante 'Voltar ao Topo' -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-opacity duration-300 opacity-0 hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+    </button>
+
+
+    <!-- Bloco de JavaScript -->
+    <script>
+        /**
+         * ESTRUTURA DE DADOS CENTRAL
+         * * Este é o "cérebro" da aplicação. Todo o dicionário é definido aqui.
+         * Para adicionar, editar ou remover qualquer tabela, basta modificar este objeto.
+         * O JavaScript irá ler este objeto e construir o HTML dinamicamente.
+         * Isso torna o sistema "escalável" e "fácil de expandir".
+         */
+        const dataDictionary = {
+            modules: [
+                {
+                    name: "Módulo: Estrutura Organizacional e Acesso",
+                    tables: [
+                        {
+                            name: "Permissao",
+                            id: "permissao",
+                            purpose: 'Armazena as permissões granulares do sistema (ex: "Criar Usuário", "Ver Relatório").',
+                            columns: [
+                                { name: "ID_Permissao", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único da permissão." },
+                                { name: "Nome_Permissao", type: "VARCHAR(100)", constraint: "NN, UQ", ref: "", desc: 'Nome único da permissão (ex: "CRIAR_TREINAMENTO").' },
+                                { name: "Descricao_Permissao", type: "VARCHAR(255)", constraint: "", ref: "", desc: "Descrição amigável do que a permissão faz." }
+                            ]
+                        },
+                        {
+                            name: "Perfil",
+                            id: "perfil",
+                            purpose: 'Define os "papéis" ou "funções" do sistema (ex: "Admin", "Gerente", "Colaborador", "Treinador").',
+                            columns: [
+                                { name: "ID_Perfil", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único do perfil." },
+                                { name: "Nome_Perfil", type: "VARCHAR(100)", constraint: "NN, UQ", ref: "", desc: 'Nome único do perfil (ex: "Gerente de Loja").' },
+                                { name: "Descricao_perfil", type: "VARCHAR(255)", constraint: "", ref: "", desc: "Descrição das responsabilidades do perfil." }
+                            ]
+                        },
+                        {
+                            name: "Perfil_Permissoes",
+                            id: "perfil_permissoes",
+                            purpose: "Tabela associativa (N:N) que vincula quais permissões cada perfil possui.",
+                            columns: [
+                                { name: "ID_Perfil", type: "INT", constraint: "PK, FK", ref: "Perfil(ID_Perfil)", desc: "Chave estrangeira para a tabela `Perfil`." },
+                                { name: "ID_Permissao", type: "INT", constraint: "PK, FK", ref: "Permissao(ID_Permissao)", desc: "Chave estrangeira para a tabela `Permissao`." }
+                            ]
+                        },
+                        {
+                            name: "Restaurante",
+                            id: "restaurante",
+                            purpose: "Armazena as informações das unidades ou lojas físicas.",
+                            columns: [
+                                { name: "ID_Restaurante", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único do restaurante." },
+                                { name: "Nome_Restaurante", type: "VARCHAR(150)", constraint: "NN", ref: "", desc: 'Nome da unidade (ex: "Impulso Pro - Unidade Paulista").' },
+                                { name: "CEP", type: "VARCHAR(9)", constraint: "NN", ref: "", desc: "CEP da unidade. Regra: Formato `XXXXX-XXX`." }
+                            ]
+                        },
+                        {
+                            name: "Departamento",
+                            id: "departamento",
+                            purpose: 'Armazena os departamentos da organização (ex: "RH", "Cozinha", "Atendimento").',
+                            columns: [
+                                { name: "ID_Departamento", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único do departamento." },
+                                { name: "Nome_Departamento", type: "VARCHAR(100)", constraint: "NN, UQ", ref: "", desc: "Nome único do departamento." }
+                            ]
+                        },
+                        {
+                            name: "Cargo",
+                            id: "cargo",
+                            purpose: "Define os cargos (posições) dentro da empresa, ligados a um departamento.",
+                            columns: [
+                                { name: "ID_Cargo", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único do cargo." },
+                                { name: "Nome_Cargo", type: "VARCHAR(100)", constraint: "NN", ref: "", desc: 'Nome do cargo (ex: "Chefe de Cozinha", "Analista de RH").' },
+                                { name: "ID_Departamento", type: "INT", constraint: "NN, FK", ref: "Departamento(ID_Departamento)", desc: "Vincula o cargo a um departamento." }
+                            ]
+                        },
+                        {
+                            name: "Colaborador_Usuario",
+                            id: "colaborador_usuario",
+                            purpose: "Tabela central de usuários, contendo todos os colaboradores do sistema.",
+                            columns: [
+                                { name: "ID_Colaborador", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único do colaborador." },
+                                { name: "Nome_Colaborador", type: "VARCHAR(200)", constraint: "NN", ref: "", desc: "Nome completo do colaborador." },
+                                { name: "Data_Nascimento", type: "DATE", constraint: "NN", ref: "", desc: "Data de nascimento." },
+                                { name: "Email", type: "VARCHAR(255)", constraint: "NN, UQ", ref: "", desc: "Email único do colaborador, usado para login." },
+                                { name: "Telefone", type: "VARCHAR(15)", constraint: "", ref: "", desc: "Telefone de contato (ex: `+55 11 98765-4321`)." },
+                                { name: "Senha_Hash", type: "VARCHAR(255)", constraint: "NN", ref: "", desc: "Hash da senha (ex: bcrypt, SHA-256). **Nunca armazene em texto plano.**" },
+                                { name: "ID_Restaurante", type: "INT", constraint: "NN, FK", ref: "Restaurante(ID_Restaurante)", desc: "Unidade onde o colaborador está alocado." },
+                                { name: "ID_Cargo", type: "INT", constraint: "NN, FK", ref: "Cargo(ID_Cargo)", desc: "Cargo atual do colaborador." }
+                            ]
+                        },
+                        {
+                            name: "Colaborador_Perfil",
+                            id: "colaborador_perfil",
+                            purpose: "Tabela associativa (N:N) que atribui um ou mais perfis (roles) a um colaborador.",
+                            columns: [
+                                { name: "ID_Colaborador", type: "INT", constraint: "PK, FK", ref: "Colaborador_Usuario(ID_Colaborador)", desc: "Chave estrangeira para o colaborador." },
+                                { name: "ID_Perfil", type: "INT", constraint: "PK, FK", ref: "Perfil(ID_Perfil)", desc: "Chave estrangeira para o perfil atribuído." }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: "Módulo: Treinamento e Desenvolvimento",
+                    tables: [
+                        {
+                            name: "Trilha_Treinamento",
+                            id: "trilha_treinamento",
+                            purpose: 'Define as "trilhas de conhecimento" ou "cursos-mãe" (ex: "Formação de Liderança", "Integração Novos Colaboradores").',
+                            columns: [
+                                { name: "ID_Trilha", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único da trilha." },
+                                { name: "Nome_Trilha", type: "VARCHAR(150)", constraint: "NN", ref: "", desc: "Nome da trilha de conhecimento." },
+                                { name: "Conteudo_teorico", type: "TEXT", constraint: "", ref: "", desc: "Campo para armazenar o conteúdo teórico principal, ou link para material externo." }
+                            ]
+                        },
+                        {
+                            name: "Treinamento",
+                            id: "treinamento",
+                            purpose: 'Define um módulo de treinamento específico (ex: "Curso de Feedback"), que pertence a uma trilha.',
+                            columns: [
+                                { name: "ID_Treinamento", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único do treinamento." },
+                                { name: "Nome_Treinamento", type: "VARCHAR(150)", constraint: "NN", ref: "", desc: "Nome do módulo de treinamento." },
+                                { name: "Categoria", type: "VARCHAR(50)", constraint: "NN", ref: "", desc: "Categoria do treinamento. Regra: `CHECK (Categoria IN ('Técnico', 'Comportamental', 'Obrigatório'))`." },
+                                { name: "Descricao", type: "VARCHAR(500)", constraint: "", ref: "", desc: "Breve descrição dos objetivos do treinamento." },
+                                { name: "ID_Trilha", type: "INT", constraint: "NN, FK", ref: "Trilha_Treinamento(ID_Trilha)", desc: "Trilha à qual este treinamento pertence." }
+                            ]
+                        },
+                        {
+                            name: "Colaborador_Treinamento",
+                            id: "colaborador_treinamento",
+                            purpose: 'Tabela associativa (N:N) que "matricula" um colaborador em um treinamento (indica o que ele *deve* fazer).',
+                            columns: [
+                                { name: "ID_Colaborador_Usuario", type: "INT", constraint: "PK, FK", ref: "Colaborador_Usuario(ID_Colaborador)", desc: "Chave estrangeira para o colaborador." },
+                                { name: "ID_Treinamento", type: "INT", constraint: "PK, FK", ref: "Treinamento(ID_Treinamento)", desc: "Chave estrangeira para o treinamento." }
+                            ]
+                        },
+                        {
+                            name: "Sessao_Equipe",
+                            id: "sessao_equipe",
+                            purpose: 'Define uma instância específica de um treinamento ("turma"), com local, data e hora.',
+                            columns: [
+                                { name: "ID_Sessao", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único da sessão (turma)." },
+                                { name: "Local_Treinamento", type: "VARCHAR(200)", constraint: "NN", ref: "", desc: 'Local onde a sessão ocorrerá (ex: "Sala de Reunião A", "Online via Teams").' },
+                                { name: "ID_Treinamento", type: "INT", constraint: "NN, FK", ref: "Treinamento(ID_Treinamento)", desc: "Treinamento que será ministrado nesta sessão." },
+                                { name: "Nota_Avaliacao", type: "DECIMAL(4, 2)", constraint: "", ref: "", desc: "Nota média de avaliação da sessão (dada pelos participantes)." },
+                                { name: "Data_Treinamento", type: "DATE", constraint: "NN", ref: "", desc: "Data da sessão." },
+                                { name: "Hora_treinamento", type: "TIME", constraint: "NN", ref: "", desc: "Horário de início da sessão." }
+                            ]
+                        },
+                        {
+                            name: "Presenca_Sessao",
+                            id: "presenca_sessao",
+                            purpose: "Tabela associativa (N:N) que registra a presença (check-in) de um colaborador em uma sessão.",
+                            columns: [
+                                { name: "ID_Usuario", type: "INT", constraint: "PK, FK", ref: "Colaborador_Usuario(ID_Colaborador)", desc: "Chave estrangeira para o colaborador presente." },
+                                { name: "ID_Sessao", type: "INT", constraint: "PK, FK", ref: "Sessao_Equipe(ID_Sessao)", desc: "Chave estrangeira para a sessão." }
+                            ]
+                        },
+                        {
+                            name: "Treinador_Sessao",
+                            id: "treinador_sessao",
+                            purpose: "Tabela associativa (N:N) que define qual colaborador (com perfil de treinador) ministrou a sessão.",
+                            columns: [
+                                { name: "ID_Colaborador_Treinador", type: "INT", constraint: "PK, FK", ref: "Colaborador_Usuario(ID_Colaborador)", desc: "ID do colaborador que atuou como treinador." },
+                                { name: "ID_Sessao_Equipe", type: "INT", constraint: "PK, FK", ref: "Sessao_Equipe(ID_Sessao)", desc: "ID da sessão que foi ministrada." }
+                            ]
+                        },
+                        {
+                            name: "Desempenho_Sessao",
+                            id: "desempenho_sessao",
+                            purpose: "Registra o desempenho individual de um colaborador em uma sessão de treinamento específica.",
+                            columns: [
+                                { name: "ID_Desempenho", type: "INT", constraint: "PK, Auto-Incremento", ref: "", desc: "Identificador único do registro de desempenho." },
+                                { name: "Progresso", type: "DECIMAL(5, 2)", constraint: "", ref: "", desc: "Percentual de progresso no treinamento (0-100.00)." },
+                                { name: "Feedback_Treinador", type: "TEXT", constraint: "", ref: "", desc: "Feedback escrito do treinador para o colaborador." },
+                                { name: "Feedback_Colaborador", type: "TEXT", constraint: "", ref: "", desc: "Feedback escrito do colaborador sobre a sessão/treinador." },
+                                { name: "Resultado_Final", type: "DECIMAL(4, 2)", constraint: "", ref: "", desc: "Nota ou pontuação final do colaborador na sessão." },
+                                { name: "ID_Colaborador", type: "INT", constraint: "NN, FK", ref: "Colaborador_Usuario(ID_Colaborador)", desc: "O colaborador que está sendo avaliado." },
+                                { name: "ID_Sessao_Equipe", type: "INT", constraint: "NN, FK", ref: "Sessao_Equipe(ID_Sessao)", desc: "A sessão à qual este desempenho se refere." },
+                                { name: "(ID_Colaborador, ID_Sessao_Equipe)", type: "(sugestão)", constraint: "UQ", ref: "", desc: "**Recomendação:** Garantir que um aluno só tenha 1 registro por sessão." }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+
+        // --- Funções Principais da Aplicação ---
+
+        /**
+         * Ponto de entrada: espera o DOM carregar e inicializa a aplicação.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            lucide.createIcons(); // Ativa os ícones do Lucide
+        });
+
+        /**
+         * Função de Inicialização
+         * - Renderiza a sidebar e o conteúdo principal.
+         * - Anexa os event listeners (filtros, botões, etc.).
+         */
+        function initApp() {
+            // Renderiza os componentes dinâmicos
+            renderSidebar();
+            renderMainContent();
+
+            // Anexa os listeners de eventos
+            attachEventListeners();
+        }
+
+        /**
+         * Renderiza a navegação da Sidebar
+         * - Lê o `dataDictionary` e cria os títulos dos módulos e links para as tabelas.
+         */
+        function renderSidebar() {
+            const nav = document.getElementById('sidebar-nav');
+            if (!nav) return;
+
+            nav.innerHTML = ''; // Limpa a navegação antes de renderizar
+
+            dataDictionary.modules.forEach(module => {
+                // Cria o título do módulo
+                const moduleTitle = document.createElement('h3');
+                moduleTitle.className = 'text-sm font-semibold text-slate-400 uppercase tracking-wider module-title';
+                moduleTitle.textContent = module.name;
+                nav.appendChild(moduleTitle);
+
+                // Cria os links das tabelas
+                const tableList = document.createElement('ul');
+                tableList.className = 'space-y-1';
+
+                module.tables.forEach(table => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `#table-${table.id}`; // Link de âncora para a tabela
+                    a.textContent = table.name;
+                    a.className = 'block px-3 py-2 rounded-md text-slate-200 hover:bg-slate-700 hover:text-white transition-colors duration-150 table-link';
+                    
+                    // Adiciona um listener de clique para fechar a sidebar no mobile
+                    a.addEventListener('click', () => {
+                        if (window.innerWidth < 768) { // 768px é o breakpoint 'md' do Tailwind
+                            toggleSidebar(false); // Força o fechamento
+                        }
+                    });
+                    
+                    li.appendChild(a);
+                    tableList.appendChild(li);
+                });
+
+                nav.appendChild(tableList);
+            });
+        }
+
+        /**
+         * Renderiza o Conteúdo Principal
+         * - Lê o `dataDictionary` e cria os "cards" para cada tabela e seu conteúdo.
+         */
+        function renderMainContent() {
+            const container = document.getElementById('tables-container');
+            if (!container) return;
+
+            container.innerHTML = ''; // Limpa o container
+
+            dataDictionary.modules.forEach(module => {
+                module.tables.forEach(table => {
+                    // Cria o "card" da tabela
+                    const tableCard = document.createElement('div');
+                    tableCard.id = `table-${table.id}`; // ID de âncora para a sidebar
+                    tableCard.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+                    
+                    // Cabeçalho do Card
+                    const cardHeader = document.createElement('div');
+                    cardHeader.className = 'p-4 md:p-6 bg-slate-50 border-b border-slate-200';
+                    cardHeader.innerHTML = `
+                        <h3 class="text-xl font-bold text-slate-900">${table.name}</h3>
+                        <p class="text-sm text-slate-600 mt-1">${table.purpose}</p>
+                    `;
+                    tableCard.appendChild(cardHeader);
+
+                    // Corpo do Card (contém a tabela)
+                    // 'overflow-x-auto' torna a tabela responsiva em telas pequenas
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'overflow-x-auto'; 
+                    
+                    // Cria a tabela HTML
+                    const tableEl = document.createElement('table');
+                    tableEl.className = 'min-w-full text-sm';
+                    
+                    // Cabeçalho da Tabela
+                    // CORREÇÃO: Usar innerHTML em <table> para injetar <thead> é problemático e
+                    // pode causar erros de hierarquia no DOM em alguns browsers.
+                    // É mais seguro criar os elementos <thead> e <tr> via DOM.
+                    const thead = document.createElement('thead');
+                    thead.className = 'bg-slate-100 text-left text-slate-600 uppercase tracking-wider';
+
+                    const headerRow = document.createElement('tr');
+                    headerRow.innerHTML = `
+                        <th class="px-4 py-3 font-semibold">Nome da Coluna</th>
+                        <th class="px-4 py-3 font-semibold">Tipo de Dado</th>
+                        <th class="px-4 py-3 font-semibold">Chave/Restrição</th>
+                        <th class="px-4 py-3 font-semibold">Referência (FK)</th>
+                        <th class="px-4 py-3 font-semibold">Descrição / Regra de Negócio</th>
+                    `;
+
+                    thead.appendChild(headerRow);
+                    tableEl.appendChild(thead); // Adiciona o cabeçalho à tabela
+
+                    // Corpo da Tabela (Linhas)
+                    const tbody = document.createElement('tbody');
+                    tbody.className = 'divide-y divide-slate-200';
+
+                    table.columns.forEach(col => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'odd:bg-white even:bg-slate-50';
+                        tr.innerHTML = `
+                            <td class="px-4 py-3 text-slate-700 font-medium">${col.name}</td>
+                            <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${col.type}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">${formatBadges(col.constraint)}</td>
+                            <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${col.ref}</td>
+                            <td class="px-4 py-3 text-slate-600">${col.desc}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    tableEl.appendChild(tbody);
+                    cardBody.appendChild(tableEl);
+                    
+                    /* CORREÇÃO: A linha abaixo estava 'tableCard.appendChild(tableCard);',
+                       o que causa o erro 'HierarchyRequestError' (tentando anexar um elemento a si mesmo).
+                       O correto é anexar o 'cardBody' ao 'tableCard'.
+                    */
+                    tableCard.appendChild(cardBody);
+                    
+                    container.appendChild(tableCard);
+                });
+            });
+        }
+
+        /**
+         * Anexa todos os Listeners de Eventos da página.
+         */
+        function attachEventListeners() {
+            // Listener para o filtro da sidebar
+            const filterInput = document.getElementById('filter-input');
+            filterInput.addEventListener('input', filterTables);
+
+            // Listeners para o botão 'Voltar ao Topo'
+            const backToTopButton = document.getElementById('back-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopButton.classList.remove('hidden', 'opacity-0');
+                } else {
+                    backToTopButton.classList.add('hidden', 'opacity-0');
+                }
+            });
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+
+        // --- Funções Auxiliares ---
+
+        /**
+         * Controla a abertura/fechamento da sidebar no mobile.
+         * @param {boolean} [forceOpen] - Opcional. Força um estado (true=abrir, false=fechar).
+         */
+        function toggleSidebar(forceOpen = null) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            const isOpen = forceOpen !== null ? forceOpen : !sidebar.classList.contains('translate-x-0');
+
+            if (isOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Filtra a lista de tabelas na sidebar com base no input.
+         */
+        function filterTables() {
+            const filterValue = document.getElementById('filter-input').value.toLowerCase();
+            const nav = document.getElementById('sidebar-nav');
+            const links = nav.getElementsByClassName('table-link');
+            const modules = nav.getElementsByClassName('module-title');
+
+            Array.from(modules).forEach(moduleEl => {
+                let moduleHasVisibleLinks = false;
+                const tableList = moduleEl.nextElementSibling; // O <ul> que segue o <h3>
+                
+                Array.from(tableList.getElementsByClassName('table-link')).forEach(link => {
+                    const tableName = link.textContent.toLowerCase();
+                    if (tableName.includes(filterValue)) {
+                        link.parentElement.classList.remove('hidden'); // Mostra o <li>
+                        moduleHasVisibleLinks = true;
+                    } else {
+                        link.parentElement.classList.add('hidden'); // Esconde o <li>
+                    }
+                });
+
+                // Se nenhum link em um módulo for visível, esconde o título do módulo também
+                if (moduleHasVisibleLinks) {
+                    moduleEl.classList.remove('hidden');
+                } else {
+                    moduleEl.classList.add('hidden');
+                }
+            });
+        }
+
+        /**
+         * Formata uma string de restrições (ex: "PK, FK, NN") em "badges" HTML coloridos.
+         * @param {string} constraints - A string de restrições.
+         * @returns {string} O HTML formatado com os badges.
+         */
+        function formatBadges(constraints) {
+            if (!constraints) return '<span class="text-slate-400">-</span>';
+
+            const badges = constraints.split(',').map(c => c.trim());
+            let html = '';
+
+            badges.forEach(badge => {
+                let colorClasses = 'text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full';
+                switch (badge.toUpperCase()) {
+                    case 'PK':
+                        colorClasses += ' bg-blue-100 text-blue-800';
+                        break;
+                    case 'FK':
+                        colorClasses += ' bg-green-100 text-green-800';
+                        break;
+                    case 'NN':
+                        colorClasses += ' bg-yellow-100 text-yellow-800';
+                        break;
+                    case 'UQ':
+                        colorClasses += ' bg-purple-100 text-purple-800';
+                        break;
+                    case 'AUTO-INCREMENTO':
+                        colorClasses += ' bg-gray-100 text-gray-800';
+                        break;
+                    default:
+                        colorClasses += ' bg-slate-100 text-slate-800';
+                }
+                html += `<span class="${colorClasses}">${badge}</span>`;
+            });
+
+            return html;
+        }
+
+    </script>
+
+</body>
+</html>
