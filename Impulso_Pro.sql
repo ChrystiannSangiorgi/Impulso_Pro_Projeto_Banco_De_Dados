@@ -1,6 +1,5 @@
 -- ==================================================
 -- SISTEMA DE GERENCIAMENTO DE TREINAMENTOS
--- Banco de Dados Corrigido
 -- ==================================================
 
 -- Tabela: Endereço dos Restaurantes
@@ -35,8 +34,9 @@ CREATE TABLE Departamento (
 CREATE TABLE Cargo (
     ID_Cargo INT PRIMARY KEY AUTO_INCREMENT,
     Nome_Cargo VARCHAR(100) NOT NULL,
-    ID_Departamento INT NOT NULL,
-    FOREIGN KEY (ID_Departamento) REFERENCES Departamento(ID_Departamento)
+    ID_Departamento INT NOT NULL, -- Coluna para a chave estrangeira
+    FOREIGN KEY (ID_Departamento) REFERENCES Departamento(ID_Departamento),
+    INDEX idx_cargo_departamento (ID_Departamento) -- Índice na chave estrangeira
 );
 
 -- Tabela: Colaborador/Usuário
@@ -48,12 +48,14 @@ CREATE TABLE Colaborador_Usuario (
     Telefone CHAR(15),  -- Mudado de VARCHAR(20) para CHAR(15) - formato padronizado: +55 11 91234-5678
     Atividade BOOLEAN NOT NULL DEFAULT TRUE,
     Consentimento_LGPD BOOLEAN NOT NULL DEFAULT FALSE,
-    Data_Aceite_LGPD DATETIME,
+    Data_Aceite_LGPD DATETIME NULL, -- Pode ser nulo se o consentimento for falso
     ID_Restaurante INT NOT NULL,
     ID_Cargo INT NOT NULL,
     UNIQUE (Email),
     FOREIGN KEY (ID_Restaurante) REFERENCES Restaurante(ID_Restaurante),
-    FOREIGN KEY (ID_Cargo) REFERENCES Cargo(ID_Cargo)
+    FOREIGN KEY (ID_Cargo) REFERENCES Cargo(ID_Cargo),
+    INDEX idx_colaborador_restaurante (ID_Restaurante), -- Índice
+    INDEX idx_colaborador_cargo (ID_Cargo) -- Índice
 );
 
 -- Tabela: Autenticação do Colaborador
@@ -87,8 +89,9 @@ CREATE TABLE Perfil_Permissoes (
     ID_Perfil INT NOT NULL,
     ID_Permissao INT NOT NULL,
     PRIMARY KEY (ID_Perfil, ID_Permissao),
-    FOREIGN KEY (ID_Perfil) REFERENCES Perfil(ID_Perfil),
-    FOREIGN KEY (ID_Permissao) REFERENCES Permissao(ID_Permissao)
+    FOREIGN KEY (ID_Perfil) REFERENCES Perfil(ID_Perfil) ON DELETE CASCADE, -- Se um perfil for deletado, suas permissões associadas também são.
+    FOREIGN KEY (ID_Permissao) REFERENCES Permissao(ID_Permissao) ON DELETE CASCADE,
+    INDEX idx_perfilperm_permissao (ID_Permissao) -- Índice
 );
 
 -- Tabela: Relacionamento Colaborador-Perfil
@@ -96,8 +99,9 @@ CREATE TABLE Colaborador_Perfil (
     ID_Perfil INT NOT NULL,
     ID_Colaborador INT NOT NULL,
     PRIMARY KEY (ID_Perfil, ID_Colaborador),
-    FOREIGN KEY (ID_Perfil) REFERENCES Perfil(ID_Perfil),
-    FOREIGN KEY (ID_Colaborador) REFERENCES Colaborador_Usuario(ID_Colaborador)
+    FOREIGN KEY (ID_Perfil) REFERENCES Perfil(ID_Perfil) ON DELETE CASCADE,
+    FOREIGN KEY (ID_Colaborador) REFERENCES Colaborador_Usuario(ID_Colaborador) ON DELETE CASCADE,
+    INDEX idx_colabperfil_colaborador (ID_Colaborador) -- Índice
 );
 
 -- Tabela: Conteúdo Teórico
@@ -131,7 +135,9 @@ CREATE TABLE Treinamento (
     ID_Trilha INT NOT NULL,
     ID_Categoria INT NOT NULL,
     FOREIGN KEY (ID_Trilha) REFERENCES Trilha_Treinamento(ID_Trilha),
-    FOREIGN KEY (ID_Categoria) REFERENCES Categoria_Treinamento(ID_Categoria)
+    FOREIGN KEY (ID_Categoria) REFERENCES Categoria_Treinamento(ID_Categoria),
+    INDEX idx_treinamento_trilha (ID_Trilha),
+    INDEX idx_treinamento_categoria (ID_Categoria)
 );
 
 -- Tabela: Tipo de Local
@@ -153,7 +159,9 @@ CREATE TABLE Sessao_Equipe (
     ID_Local INT,
     FOREIGN KEY (ID_Treinamento) REFERENCES Treinamento(ID_Treinamento),
     FOREIGN KEY (ID_Criador) REFERENCES Colaborador_Usuario(ID_Colaborador),
-    FOREIGN KEY (ID_Local) REFERENCES Local_Tipo(ID_Local)
+    FOREIGN KEY (ID_Local) REFERENCES Local_Tipo(ID_Local),
+    INDEX idx_sessao_treinamento (ID_Treinamento),
+    INDEX idx_sessao_local (ID_Local)
 );
 
 -- Tabela: Tipo de Resultado
@@ -177,7 +185,9 @@ CREATE TABLE Desempenho_Sessao (
     CHECK (Progresso BETWEEN 0 AND 100),
     FOREIGN KEY (ID_Sessao_Equipe) REFERENCES Sessao_Equipe(ID_Sessao),
     FOREIGN KEY (ID_Colaborador) REFERENCES Colaborador_Usuario(ID_Colaborador),
-    FOREIGN KEY (ID_Resultado) REFERENCES Resultado_Tipo(ID_Resultado)
+    FOREIGN KEY (ID_Resultado) REFERENCES Resultado_Tipo(ID_Resultado),
+    INDEX idx_desempenho_sessao (ID_Sessao_Equipe),
+    INDEX idx_desempenho_colaborador (ID_Colaborador)
 );
 
 -- Tabela: Relacionamento Colaborador-Treinamento
@@ -186,16 +196,18 @@ CREATE TABLE Colaborador_Treinamento (
     ID_Treinamento INT NOT NULL,
     PRIMARY KEY (ID_Colaborador_Usuario, ID_Treinamento),
     FOREIGN KEY (ID_Colaborador_Usuario) REFERENCES Colaborador_Usuario(ID_Colaborador),
-    FOREIGN KEY (ID_Treinamento) REFERENCES Treinamento(ID_Treinamento)
+    FOREIGN KEY (ID_Treinamento) REFERENCES Treinamento(ID_Treinamento),
+    INDEX idx_colabtrein_treinamento (ID_Treinamento)
 );
 
 -- Tabela: Presença na Sessão
 CREATE TABLE Presenca_Sessao (
     ID_Sessao INT NOT NULL,
-    ID_Usuario INT NOT NULL,
-    PRIMARY KEY (ID_Sessao, ID_Usuario),
+    ID_Colaborador INT NOT NULL,
+    PRIMARY KEY (ID_Sessao, ID_Colaborador),
     FOREIGN KEY (ID_Sessao) REFERENCES Sessao_Equipe(ID_Sessao),
-    FOREIGN KEY (ID_Usuario) REFERENCES Colaborador_Usuario(ID_Colaborador)
+    FOREIGN KEY (ID_Colaborador) REFERENCES Colaborador_Usuario(ID_Colaborador),
+    INDEX idx_presenca_colaborador (ID_Colaborador)
 );
 
 -- Tabela: Treinador da Sessão
@@ -204,7 +216,8 @@ CREATE TABLE Treinador_Sessao (
     ID_Colaborador_Treinador INT NOT NULL,
     PRIMARY KEY (ID_Sessao_Equipe, ID_Colaborador_Treinador),
     FOREIGN KEY (ID_Sessao_Equipe) REFERENCES Sessao_Equipe(ID_Sessao),
-    FOREIGN KEY (ID_Colaborador_Treinador) REFERENCES Colaborador_Usuario(ID_Colaborador)
+    FOREIGN KEY (ID_Colaborador_Treinador) REFERENCES Colaborador_Usuario(ID_Colaborador),
+    INDEX idx_treinador_colaborador (ID_Colaborador_Treinador)
 );
 
 -- Tabela: Log de Auditoria
